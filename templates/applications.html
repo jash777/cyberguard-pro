@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}CyberGuard Pro - Installed Applications{% endblock %}
+
+{% block content %}
+<section id="applications">
+    <h2>Installed Applications</h2>
+    <div class="search-container">
+        <input type="text" id="app-search" placeholder="Search applications...">
+    </div>
+    <div class="table-container">
+        <table id="applications-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>Install Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>{{ app.name }}</td>
+                    <td>{{ app.version }}</td>
+                    <td>{{ app.install_date.strftime('%Y-%m-%d %H:%M:%S') if app.install_date else 'Unknown' }}</td>
+                    <td>
+                        <button class="btn btn-small" onclick="checkForUpdates({{ app.id }})">Check for Updates</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination">
+    </div>
+</section>
+
+<div id="update-modal" class="modal">
+    <div class="modal-content">
+        <h3>Application Update</h3>
+        <p id="update-message"></p>
+        <button id="close-update-modal" class="btn">Close</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/applications.js') }}"></script>
+{% endblock %}

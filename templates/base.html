@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CyberGuard Pro{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}" {% if request.path == url_for('index') %}class="active"{% endif %}>Dashboard</a></li>
+                <li><a href="{{ url_for('agents') }}" {% if request.path == url_for('agents') %}class="active"{% endif %}>Agents</a></li>
+                <li><a href="{{ url_for('processes') }}" {% if request.path == url_for('processes') %}class="active"{% endif %}>Processes</a></li>
+                <li><a href="{{ url_for('users') }}" {% if request.path == url_for('users') %}class="active"{% endif %}>Users</a></li>
+                <li><a href="{{ url_for('applications') }}" {% if request.path == url_for('applications') %}class="active"{% endif %}>Applications</a></li>
+                <li><a href="{{ url_for('firewall') }}" {% if request.path == url_for('firewall') %}class="active"{% endif %}>Firewall</a></li>
+                <li><p id="current-time"></p></li>
+            </ul>
+        </nav>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

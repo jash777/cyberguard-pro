@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}CyberGuard Pro - Users{% endblock %}
+
+{% block content %}
+<section id="users">
+    <h2>System Users</h2>
+    <button id="add-user-btn" class="btn">Add New User</button>
+    <div class="table-container">
+        <table id="users-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>UID</th>
+                    <th>Groups</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.uid }}</td>
+                    <td>{{ user.groups }}</td>
+                    <td>{{ user.last_login }}</td>
+                    <td>
+                        <button class="btn btn-small btn-danger" onclick="removeUser({{ user.id }})">Remove</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="add-user-modal" class="modal">
+    <div class="modal-content">
+        <h3>Add New User</h3>
+        <form id="add-user-form">
+            <input type="text" id="new-username" placeholder="Username" required>
+            <input type="number" id="new-uid" placeholder="UID" required>
+            <input type="text" id="new-groups" placeholder="Groups (comma-separated)">
+            <button type="submit" class="btn">Add User</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/users.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}CyberGuard Pro - Agents{% endblock %}
+
+{% block content %}
+<section id="agents">
+    <h2>Managed Agents</h2>
+    <button id="add-agent-btn" class="btn">Add New Agent</button>
+    <div class="table-container">
+        <table id="agents-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>IP Address</th>
+                    <th>Status</th>
+                    <th>Last Check</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in agents %}
+                <tr>
+                    <td>{{ agent.name }}</td>
+                    <td>{{ agent.ip_address }}</td>
+                    <td>{{ agent.status }}</td>
+                    <td>{{ agent.last_check }}</td>
+                    <td>
+                        <button class="btn btn-small btn-danger" onclick="removeAgent({{ agent.id }})">Remove</button>
+                        <button class="btn btn-small" onclick="checkAgentStatus({{ agent.id }})">Check Status</button>
+                        <button class="btn btn-small btn-primary" onclick="selectAgent({{ agent.id }})">Select</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="add-agent-modal" class="modal">
+    <div class="modal-content">
+        <h3>Add New Agent</h3>
+        <form id="add-agent-form">
+            <input type="text" id="agent-name" placeholder="Agent Name" required>
+            <input type="text" id="agent-ip" placeholder="IP Address" required>
+            <button type="submit" class="btn">Add Agent</button>
+        </form>
+    </div>
+</div>
+
+<div id="selected-agent-info">
+    <p>Selected Agent: <span id="selected-agent-name">None</span></p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/agents.js') }}"></script>
+{% endblock %}

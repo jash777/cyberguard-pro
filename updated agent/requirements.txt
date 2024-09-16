@@ -1,0 +1,34 @@
+# Flask and related packages
+Flask==2.1.2
+Flask-SocketIO==5.2.0
+
+# Networking and system information
+python-iptables==1.0.0
+psutil==5.9.0
+
+# Cryptography (for password hashing)
+bcrypt==3.2.0
+
+# Concurrent programming
+eventlet==0.33.0
+
+# HTTP client (for potential future use)
+requests==2.27.1
+
+# Type checking (optional, but recommended for development)
+mypy==0.950
+
+# Testing (optional, but recommended for development)
+pytest==7.1.2
+
+# Logging (already part of Python standard library, but specified for clarity)
+logging==0.5.1.2
+
+# JSON handling (already part of Python standard library, but specified for clarity)
+json==2.0.9
+
+# Operating system interfaces (already part of Python standard library, but specified for clarity)
+os-sys==2.1.4
+
+# Regular expressions (already part of Python standard library, but specified for clarity)
+regex==2022.4.24

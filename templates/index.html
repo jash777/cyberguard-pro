@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}CyberGuard Pro - Dashboard{% endblock %}
+
+{% block content %}
+<section id="dashboard">
+    <h2>System Overview</h2>
+    <div class="grid">
+        <div class="card" id="agent-count">
+            <h3>Active Agents</h3>
+            <p class="large-number">0</p>
+        </div>
+        <div class="card" id="process-count">
+            <h3>Active Processes</h3>
+            <p class="large-number">0</p>
+        </div>
+        <div class="card" id="user-count">
+            <h3>System Users</h3>
+            <p class="large-number">0</p>
+        </div>
+        <div class="card" id="app-count">
+            <h3>Installed Apps</h3>
+            <p class="large-number">0</p>
+        </div>
+    </div>
+    <div class="chart-container">
+        <canvas id="system-load-chart"></canvas>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}CyberGuard Pro - Firewall Rules{% endblock %}
+
+{% block content %}
+<section id="firewall">
+    <h2>Firewall Rules (iptables)</h2>
+    <div class="agent-selector">
+        <label for="agent-select">Select Agent:</label>
+        <select id="agent-select">
+            <option value="">Select an agent</option>
+            {% for agent in agents %}
+                <option value="{{ agent.id }}" {% if agent.id == selected_agent_id %}selected{% endif %}>
+                    {{ agent.name }} ({{ agent.ip_address }})
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button id="add-rule-btn" class="btn">Add New Rule</button>
+    <div class="table-container">
+        <table id="firewall-table">
+            <thead>
+                <tr>
+                    <th>Table</th>
+                    <th>Chain</th>
+                    <th>Protocol</th>
+                    <th>Source</th>
+                    <th>Destination</th>
+                    <th>Target</th>
+                    <th>Details</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rules will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="add-rule-modal" class="modal">
+    <div class="modal-content">
+        <h3>Add Firewall Rule (iptables)</h3>
+        <form id="add-rule-form">
+            <select id="rule-table" required>
+                <option value="filter">filter</option>
+                <option value="nat">nat</option>
+                <option value="mangle">mangle</option>
+                <option value="raw">raw</option>
+            </select>
+            <select id="rule-chain" required>
+                <option value="INPUT">INPUT</option>
+                <option value="OUTPUT">OUTPUT</option>
+                <option value="FORWARD">FORWARD</option>
+                <option value="PREROUTING">PREROUTING</option>
+                <option value="POSTROUTING">POSTROUTING</option>
+            </select>
+            <input type="text" id="rule-protocol" placeholder="Protocol (e.g., tcp, udp, icmp)" required>
+            <input type="text" id="rule-source" placeholder="Source IP">
+            <input type="text" id="rule-destination" placeholder="Destination IP">
+            <input type="text" id="rule-target" placeholder="Target (e.g., ACCEPT, DROP)" required>
+            <input type="text" id="rule-extra" placeholder="Extra details (e.g., --dport 80)">
+            <button type="submit" class="btn">Add Rule</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const agentSelect = document.getElementById('agent-select');
+    
+    agentSelect.addEventListener('change', function() {
+        const selectedAgentId = this.value;
+        if (selectedAgentId) {
+            fetch('/select_agent/' + selectedAgentId, {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Agent selected successfully') {
+                    loadFirewallRules();
+                } else {
+                    alert('Failed to select agent');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+
+    loadFirewallRules();
+
+    const addRuleBtn = document.getElementById('add-rule-btn');
+    const addRuleModal = document.getElementById('add-rule-modal');
+    const addRuleForm = document.getElementById('add-rule-form');
+
+    addRuleBtn.addEventListener('click', () => {
+        addRuleModal.style.display = 'block';
+    });
+
+    addRuleForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        addFirewallRule();
+    });
+
+    window.onclick = (event) => {
+        if (event.target == addRuleModal) {
+            addRuleModal.style.display = 'none';
+        }
+    };
+});
+
+function loadFirewallRules() {
+    fetch('/api/firewall_rules')
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.querySelector('#firewall-table tbody');
+            tableBody.innerHTML = '';
+            for (const [table, chains] of Object.entries(data)) {
+                for (const [chain, chainData] of Object.entries(chains)) {
+                    chainData.rules.forEach(rule => {
+                        const row = createRuleRow(table, chain, rule);
+                        tableBody.appendChild(row);
+                    });
+                }
+            }
+        })
+        .catch(error => console.error('Error loading firewall rules:', error));
+}
+
+function createRuleRow(table, chain, rule) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${table}</td>
+        <td>${chain}</td>
+        <td>${rule.protocol || '-'}</td>
+        <td>${rule.src || '-'}</td>
+        <td>${rule.dst || '-'}</td>
+        <td>${rule.target || '-'}</td>
+        <td>${rule.matches.map(m => `${m.name}${m.dport ? `:${m.dport}` : ''}`).join(', ') || '-'}</td>
+        <td>
+            <button class="btn btn-small btn-danger" onclick="removeRule('${table}', '${chain}', '${rule.protocol}', '${rule.src}', '${rule.dst}', '${rule.target}')">Remove</button>
+        </td>
+    `;
+    return row;
+}
+
+function addFirewallRule() {
+    const rule = {
+        table: document.getElementById('rule-table').value,
+        chain: document.getElementById('rule-chain').value,
+        protocol: document.getElementById('rule-protocol').value,
+        src: document.getElementById('rule-source').value,
+        dst: document.getElementById('rule-destination').value,
+        target: document.getElementById('rule-target').value,
+        extra: document.getElementById('rule-extra').value
+    };
+
+    fetch('/api/firewall_rules', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(rule),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Firewall rule added successfully');
+            loadFirewallRules();
+            document.getElementById('add-rule-modal').style.display = 'none';
+            document.getElementById('add-rule-form').reset();
+        } else {
+            alert('Failed to add firewall rule: ' + data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Error adding firewall rule');
+    });
+}
+
+function removeRule(table, chain, protocol, src, dst, target) {
+    if (confirm('Are you sure you want to remove this firewall rule?')) {
+        fetch('/api/firewall_rules', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ table, chain, protocol, src, dst, target }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Firewall rule removed successfully');
+                loadFirewallRules();
+            } else {
+                alert('Failed to remove firewall rule: ' + data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Error removing firewall rule');
+        });
+    }
+}
+</script>
+{% endblock %}
