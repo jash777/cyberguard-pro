@@ -4,33 +4,30 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateDashboardCounts() {
-    fetch('/api/agents')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('agent-count').querySelector('.large-number').textContent = data.length;
-        });
+    const countElements = {
+        'agent-count': '/api/agents',
+        'process-count': '/api/processes',
+        'user-count': '/api/users',
+        'app-count': '/api/applications'
+    };
 
-    fetch('/api/processes')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('process-count').querySelector('.large-number').textContent = data.length;
-        });
-
-    fetch('/api/users')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('user-count').querySelector('.large-number').textContent = data.length;
-        });
-
-    fetch('/api/applications')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('app-count').querySelector('.large-number').textContent = data.length;
-        });
+    Object.entries(countElements).forEach(([elementId, endpoint]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            fetch(endpoint)
+                .then(handleResponse)
+                .then(data => {
+                    element.querySelector('.large-number').textContent = data.length;
+                })
+                .catch(error => showError(`Error updating ${elementId}:`, error));
+        }
+    });
 }
 
 function createSystemLoadChart() {
-    const ctx = document.getElementById('system-load-chart').getContext('2d');
+    const ctx = document.getElementById('system-load-chart')?.getContext('2d');
+    if (!ctx) return;
+
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -51,4 +48,16 @@ function createSystemLoadChart() {
             }
         }
     });
+}
+
+function handleResponse(response) {
+    if (!response.ok) {
+        return response.json().then(err => { throw err; });
+    }
+    return response.json();
+}
+
+function showError(message, error) {
+    console.error(message, error);
+    showAlert(`${message} ${error.message || 'Unknown error'}`);
 }

@@ -24,6 +24,8 @@ app.route('/users')(users)
 app.route('/applications')(applications)
 app.route('/firewall')(firewall)
 app.route('/processes')(processes)
+app.route('/block_port')(block_port)
+
 
 # API Routes
 app.route('/api/agents', methods=['GET', 'POST', 'DELETE'])(manage_agents)
@@ -32,8 +34,8 @@ app.route('/api/processes')(get_processes)
 app.route('/api/users', methods=['GET', 'POST', 'DELETE'])(manage_users)
 app.route('/api/applications')(get_applications)
 app.route('/api/firewall_rules', methods=['GET', 'POST', 'DELETE'])(manage_firewall_rules)
-app.route('/api/block_port', methods=['POST'])(block_port)
 app.route('/api/selected_agent')(get_selected_agent)
+app.route('/api/block_port', methods=['POST','GET'])(block_port)
 
 if __name__ == '__main__':
     app.run(debug=DEBUG, port=PORT)

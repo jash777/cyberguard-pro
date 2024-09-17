@@ -22,12 +22,12 @@
                 <tr>
                     <td>{{ agent.name }}</td>
                     <td>{{ agent.ip_address }}</td>
-                    <td>{{ agent.status }}</td>
+                    <td class="agent-status" data-agent-id="{{ agent.id }}">{{ agent.status }}</td>
                     <td>{{ agent.last_check }}</td>
                     <td>
-                        <button class="btn btn-small btn-danger" onclick="removeAgent({{ agent.id }})">Remove</button>
-                        <button class="btn btn-small" onclick="checkAgentStatus({{ agent.id }})">Check Status</button>
-                        <button class="btn btn-small btn-primary" onclick="selectAgent({{ agent.id }})">Select</button>
+                        <button class="btn btn-small btn-danger" data-action="remove" data-agent-id="{{ agent.id }}">Remove</button>
+                        <button class="btn btn-small" data-action="check-status" data-agent-id="{{ agent.id }}">Check Status</button>
+                        <button class="btn btn-small btn-primary" data-action="select" data-agent-id="{{ agent.id }}">Select</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -38,6 +38,7 @@
 
 <div id="add-agent-modal" class="modal">
     <div class="modal-content">
+        <span class="close">&times;</span>
         <h3>Add New Agent</h3>
         <form id="add-agent-form">
             <input type="text" id="agent-name" placeholder="Agent Name" required>

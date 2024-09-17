@@ -1,8 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const agentSelect = document.getElementById('agent-select');
-    const processesTable = document.getElementById('processes-table').getElementsByTagName('tbody')[0];
+    const processesTable = document.getElementById('processes-table');
+    const processesTableBody = processesTable.getElementsByTagName('tbody')[0];
+    const selectAgentBtn = document.getElementById('select-agent-btn');
+    const refreshDataBtn = document.getElementById('refresh-data-btn');
     const refreshInterval = 5000; // Refresh every 5 seconds
     let selectedAgentId = null;
+    let isLoading = false;
 
     function fetchAgents() {
         fetch('/api/agents')
@@ -16,14 +20,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     agentSelect.appendChild(option);
                 });
             })
-            .catch(error => console.error('Error fetching agents:', error));
+            .catch(error => {
+                console.error('Error fetching agents:', error);
+                showAlert('Error fetching agents. Please try again.');
+            });
     }
 
     function selectAgent(agentId) {
         fetch(`/select_agent/${agentId}`, { method: 'POST' })
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(err => { throw err; });
+                    throw new Error('Failed to select agent');
                 }
                 return response.json();
             })
@@ -35,8 +42,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Error selecting agent:', error);
                 showAlert(`Error selecting agent: ${error.message || 'Unknown error'}`);
+                resetAgentSelection();
             });
     }
+
     function fetchProcesses() {
         if (!selectedAgentId) {
             showAlert('Please select an agent first.');
@@ -46,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/processes')
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(err => { throw err; });
+                    throw new Error('Failed to fetch processes');
                 }
                 return response.json();
             })
@@ -58,64 +67,87 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error fetching processes:', error);
-                if (error.message.includes('No agent selected')) {
-                    showAlert('Please select an agent first.');
-                } else if (error.message.includes('Processes not enabled')) {
-                    showAlert('Processes are not enabled for this agent.');
-                } else {
-                    showAlert(`Error fetching processes: ${error.message}`);
-                }
-                clearProcessesTable();
+                showAlert(`Error fetching processes: ${error.message}. Please select an agent again.`);
+                resetAgentSelection();
             });
     }
 
     function updateProcessesTable(processes) {
         clearProcessesTable();
-
-        if (processes.length === 0) {
+        if (!Array.isArray(processes) || processes.length === 0) {
             showAlert('No processes found for this agent.');
             return;
         }
 
-        processes.forEach(process => {
-            const row = processesTable.insertRow();
+        const fragment = document.createDocumentFragment();
+        processes.forEach((process) => {
+            const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${process.pid}</td>
-                <td>${process.name}</td>
-                <td>${process.username}</td>
+                <td>${escapeHtml(process.pid)}</td>
+                <td>${escapeHtml(process.name)}</td>
+                <td>${escapeHtml(process.username)}</td>
                 <td>${process.cpu_percent ? process.cpu_percent.toFixed(2) : 'N/A'}</td>
                 <td>${process.memory_percent ? process.memory_percent.toFixed(2) : 'N/A'}</td>
             `;
+            fragment.appendChild(row);
         });
+        processesTableBody.appendChild(fragment);
     }
 
     function clearProcessesTable() {
-        processesTable.innerHTML = '';
+        processesTableBody.innerHTML = '';
     }
 
     function showAlert(message) {
         clearProcessesTable();
-        const alertRow = processesTable.insertRow();
-        alertRow.innerHTML = `<td colspan="5" class="alert-message">${message}</td>`;
+        const alertRow = processesTableBody.insertRow();
+        alertRow.innerHTML = `<td colspan="5" class="alert-message">${escapeHtml(message)}</td>`;
     }
 
-    agentSelect.addEventListener('change', function() {
-        const selectedAgentId = this.value;
-        if (selectedAgentId) {
-            selectAgent(selectedAgentId);
+    function resetAgentSelection() {
+        selectedAgentId = null;
+        agentSelect.value = '';
+        clearProcessesTable();
+    }
+
+    function escapeHtml(unsafe) {
+        if (unsafe == null) return '';
+        return unsafe
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    selectAgentBtn.addEventListener('click', function() {
+        const agentId = agentSelect.value;
+        if (agentId) {
+            selectAgent(agentId);
         } else {
-            clearProcessesTable();
             showAlert('Please select an agent');
+        }
+    });
+
+    refreshDataBtn.addEventListener('click', function() {
+        if (selectedAgentId) {
+            fetchProcesses();
+        } else {
+            showAlert('Please select an agent first');
         }
     });
 
     // Initial fetch of agents
     fetchAgents();
 
-    // Set up periodic refresh of processes only if an agent is selected
+    // We'll remove the automatic refresh to avoid unwanted requests
+    // If you still want periodic updates, you can uncomment the following:
+    /*
     setInterval(() => {
         if (selectedAgentId) {
             fetchProcesses();
         }
     }, refreshInterval);
+    */
 });

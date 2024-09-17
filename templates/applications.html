@@ -5,6 +5,9 @@
 {% block content %}
 <section id="applications">
     <h2>Installed Applications</h2>
+    <div id="agent-info">
+        <p>Selected Agent: <span id="selected-agent-name">None</span></p>
+    </div>
     <div class="search-container">
         <input type="text" id="app-search" placeholder="Search applications...">
     </div>
@@ -14,25 +17,16 @@
                 <tr>
                     <th>Name</th>
                     <th>Version</th>
-                    <th>Install Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>{{ app.name }}</td>
-                    <td>{{ app.version }}</td>
-                    <td>{{ app.install_date.strftime('%Y-%m-%d %H:%M:%S') if app.install_date else 'Unknown' }}</td>
-                    <td>
-                        <button class="btn btn-small" onclick="checkForUpdates({{ app.id }})">Check for Updates</button>
-                    </td>
-                </tr>
-                {% endfor %}
+            <tbody id="applications-body">
+                <!-- Applications will be populated here by JavaScript -->
             </tbody>
         </table>
     </div>
     <div class="pagination">
+        <!-- Pagination will be handled by JavaScript if needed -->
     </div>
 </section>
 

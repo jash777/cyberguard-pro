@@ -302,3 +302,230 @@ input, select {
     margin-left: 67rem;
     position: relative;
 }
+
+.firewall-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.agent-selector {
+    flex-grow: 1;
+}
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.btn:hover {
+    opacity: 0.8;
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 5px;
+}
+.modal-content h3 {
+    margin-top: 0;
+}
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+}
+.modal-content input,
+.modal-content select {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+.table-container {
+    overflow-x: auto;
+}
+#firewall-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+#firewall-table th,
+#firewall-table td {
+    padding: 8px;
+    text-align: left;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+}
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+}
+.modal-content input {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+.modal-content button {
+    padding: 10px 15px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+.modal-content button:hover {
+    background-color: #c82333;
+}
+
+#processes {
+    background-color: var(--secondary-color);
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.1);
+}
+
+#processes h2 {
+    color: var(--accent-color);
+    margin-bottom: 20px;
+}
+
+.agent-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    background-color: var(--bg-color);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.agent-selector select {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid var(--accent-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 5px;
+}
+
+.btn {
+    padding: 10px 15px;
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: var(--highlight-color);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+#processes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#processes-table th,
+#processes-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#processes-table th {
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+#processes-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.alert-message {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--warning-color);
+    color: var(--bg-color);
+    border-radius: 5px;
+    font-weight: bold;
+}
