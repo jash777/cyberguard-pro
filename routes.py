@@ -6,7 +6,7 @@ from api import make_api_request
 from datetime import datetime
 import random
 from functools import wraps
-
+import requests
 # Configure logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -87,11 +87,11 @@ def users():
     logger.info(f"Users API request status code: {status_code}")
     return render_template('users.html', users=response.get('users', []), error=response.get('error') if status_code != 200 else None)
 
-def applications():
-    logger.debug("Fetching applications from agent")
-    response, status_code = make_api_request('applications')
-    logger.info(f"Applications API request status code: {status_code}")
-    return render_template('applications.html', applications=response.get('applications', []), error=response.get('error') if status_code != 200 else None)
+# def applications():
+#     logger.debug("Fetching applications from agent")
+#     response, status_code = make_api_request('applications')
+#     logger.info(f"Applications API request status code: {status_code}")
+#     return render_template('applications.html', applications=response.get('applications', []), error=response.get('error') if status_code != 200 else None)
 
 @db_connection_required
 def manage_agents(connection):
@@ -182,32 +182,77 @@ def manage_users():
     return jsonify(response), status_code
 
 @agent_required
-def get_applications():
-    logger.debug("Fetching applications from agent")
+def services():
+    return render_template('applications.html')
+
+# @agent_required
+# def get_services():
+#     logger.debug("Fetching services from agent")
+#     try:
+#         selected_agent = session.get('selected_agent')
+#         if not selected_agent:
+#             logger.warning("No agent selected when trying to fetch services")
+#             return jsonify({'error': 'No agent selected'}), 400
+
+#         logger.info(f"Fetching services for agent: {selected_agent}")
+#         response, status_code = make_api_request('applications', agent_ip=selected_agent)
+        
+#         if status_code == 200:
+#             # Ensure the response is in the correct format
+#             if isinstance(response, list):
+#                 services = response
+#             elif isinstance(response, dict) and 'services' in response:
+#                 services = response['services']
+#             else:
+#                 services = []
+            
+#             # Format the services data
+#             formatted_services = [
+#                 {
+#                     'name': service.get('name', 'Unknown'),
+#                     'status': service.get('status', 'Unknown')
+#                 } for service in services
+#             ]
+            
+#             logger.info(f"Successfully retrieved {len(formatted_services)} services for agent {selected_agent}")
+#             return jsonify({'services': formatted_services}), 200
+#         else:
+#             logger.error(f"Failed to retrieve services for agent {selected_agent}. Status code: {status_code}")
+#             return jsonify({'error': 'Failed to retrieve services'}), status_code
+#     except Exception as e:
+#         logger.exception(f"Unexpected error in get_services route for agent {selected_agent}")
+#         return jsonify({'error': 'An unexpected error occurred while retrieving services'}), 500
+
+
+
+
+def get_services():
+    logger.debug("Fetching services from agent")
     try:
-        response, status_code = make_api_request('applications')
-        if status_code == 200:
-            # Ensure the response is in the correct format
-            if isinstance(response, list):
-                applications = response
-            elif isinstance(response, dict) and 'applications' in response:
-                applications = response['applications']
-            else:
-                applications = []
-            
-            # Format the applications data
-            formatted_applications = [
-                {'name': app, 'version': 'Unknown'} for app in applications
-            ]
-            
-            logger.info(f"Successfully retrieved {len(formatted_applications)} applications")
-            return jsonify({'applications': formatted_applications}), 200
+        selected_agent = session.get('selected_agent')
+        if not selected_agent:
+            logger.warning("No agent selected when trying to fetch services")
+            return jsonify({'error': 'No agent selected'}), 400
+
+        logger.info(f"Fetching services for agent: {selected_agent}")
+        
+        # Make a request to the agent's services endpoint
+        response = requests.get(f'http://{selected_agent}:5000/services')
+        
+        if response.status_code == 200:
+            services = response.json().get('services', [])
+            logger.info(f"Successfully retrieved {len(services)} services for agent {selected_agent}")
+            return jsonify({'services': services}), 200
         else:
-            logger.error(f"Failed to retrieve applications. Status code: {status_code}")
-            return jsonify({'error': 'Failed to retrieve applications'}), status_code
+            logger.error(f"Failed to retrieve services for agent {selected_agent}. Status code: {response.status_code}")
+            return jsonify({'error': 'Failed to retrieve services'}), response.status_code
+    except requests.RequestException as e:
+        logger.exception(f"Network error in get_services route for agent {session.get('selected_agent')}")
+        return jsonify({'error': 'Network error occurred while retrieving services'}), 503
     except Exception as e:
-        logger.exception("Unexpected error in get_applications route")
-        return jsonify({'error': 'An unexpected error occurred while retrieving applications'}), 500
+        logger.exception(f"Unexpected error in get_services route for agent {session.get('selected_agent')}")
+        return jsonify({'error': 'An unexpected error occurred while retrieving services'}), 500
+
 
 @agent_required
 def block_port():

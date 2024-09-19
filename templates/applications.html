@@ -1,44 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}CyberGuard Pro - Installed Applications{% endblock %}
+{% block title %}CyberGuard Pro - Installed Services{% endblock %}
 
 {% block content %}
-<section id="applications">
-    <h2>Installed Applications</h2>
+<section id="services">
+    <h2>Installed Services</h2>
+    
+    <div class="agent-selector" id="agent-selection">
+        <label for="agent-select">Select Agent:</label>
+        <select id="agent-select">
+            <option value="">Select an agent</option>
+            <!-- Agents will be populated here by JavaScript -->
+        </select>
+        <button id="select-agent-btn" class="btn">Select Agent</button>
+    </div>
+
     <div id="agent-info">
         <p>Selected Agent: <span id="selected-agent-name">None</span></p>
     </div>
-    <div class="search-container">
-        <input type="text" id="app-search" placeholder="Search applications...">
+    
+    <div class="controls">
+        <button id="refresh-data-btn" class="btn">Refresh Data</button>
+        <input type="text" id="service-search" placeholder="Search services...">
+        <select id="category-filter">
+            <option value="">All Categories</option>
+            <!-- Categories will be populated here by JavaScript -->
+        </select>
     </div>
+
     <div class="table-container">
-        <table id="applications-table">
+        <table id="services-table">
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Version</th>
-                    <th>Actions</th>
+                    <th>Category</th>
                 </tr>
             </thead>
-            <tbody id="applications-body">
-                <!-- Applications will be populated here by JavaScript -->
+            <tbody>
+                <!-- Services will be populated here by JavaScript -->
             </tbody>
         </table>
     </div>
+
     <div class="pagination">
-        <!-- Pagination will be handled by JavaScript if needed -->
+        <button id="prev-page" class="btn">Previous</button>
+        <span id="page-info">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+        <button id="next-page" class="btn">Next</button>
     </div>
 </section>
 
-<div id="update-modal" class="modal">
+<div id="service-modal" class="modal">
     <div class="modal-content">
-        <h3>Application Update</h3>
-        <p id="update-message"></p>
-        <button id="close-update-modal" class="btn">Close</button>
+        <h3>Service Information</h3>
+        <p id="service-message"></p>
+        <button id="close-service-modal" class="btn">Close</button>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/applications.js') }}"></script>
+<script src="{{ url_for('static', filename='js/services.js') }}"></script>
 {% endblock %}

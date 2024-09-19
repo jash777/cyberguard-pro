@@ -1,6 +1,6 @@
-import iptc
+# system_manager.py
+
 import logging
-import ipaddress
 import psutil
 import pwd
 import grp
@@ -8,23 +8,20 @@ import os
 import spwd
 import shutil
 from pathlib import Path
-import crypt
-from functools import lru_cache
+import hashlib
+import secrets
 import re
-import subprocess
-import json
-from concurrent.futures import ThreadPoolExecutor
+import asyncio
+import aiofiles
+from functools import lru_cache
 from typing import List, Dict, Any, Tuple, Optional
 
-logging.basicConfig(filename='Rule.log', level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
 
 class SystemManager:
     @staticmethod
-    @lru_cache(maxsize=None)
-    def get_running_processes() -> List[Dict[str, Any]]:
+    @lru_cache(maxsize=1000)
+    async def get_running_processes() -> List[Dict[str, Any]]:
         try:
             return [
                 {'pid': proc.info['pid'], 'name': proc.info['name'], 'username': proc.info['username']}
@@ -35,7 +32,13 @@ class SystemManager:
             return []
 
     @staticmethod
-    def add_user(username: str, password: str, groups: Optional[List[str]] = None) -> Tuple[bool, str]:
+    async def add_user(username: str, password: str, groups: Optional[List[str]] = None) -> Tuple[bool, str]:
+        if not re.match(r'^[a-z_][a-z0-9_-]{0,31}$', username):
+            return False, "Invalid username format"
+
+        if len(password) < 12:
+            return False, "Password must be at least 12 characters long"
+
         try:
             pwd.getpwnam(username)
             return False, f"User {username} already exists"
@@ -43,26 +46,29 @@ class SystemManager:
             pass
 
         try:
-            salt = os.urandom(6).hex()
-            hashed_password = crypt.crypt(password, f'$6${salt}$')
+            salt = secrets.token_hex(16)
+            hashed_password = hashlib.sha512((password + salt).encode()).hexdigest()
 
             uids = [u.pw_uid for u in pwd.getpwall()]
             next_uid = max(uids) + 1 if uids else 1000
 
             new_user = f"{username}:x:{next_uid}:{next_uid}::/home/{username}:/bin/bash"
 
-            with open('/etc/passwd', 'a') as passwd_file:
-                passwd_file.write(new_user + '\n')
+            async with aiofiles.open('/etc/passwd', 'a') as passwd_file:
+                await passwd_file.write(new_user + '\n')
 
-            with open('/etc/shadow', 'a') as shadow_file:
-                shadow_file.write(f"{username}:{hashed_password}::0:99999:7:::\n")
+            async with aiofiles.open('/etc/shadow', 'a') as shadow_file:
+                await shadow_file.write(f"{username}:{hashed_password}:{salt}::0:99999:7:::\n")
 
-            Path(f"/home/{username}").mkdir(mode=0o700, exist_ok=True)
-            os.chown(f"/home/{username}", next_uid, next_uid)
+            home_dir = Path(f"/home/{username}")
+            home_dir.mkdir(mode=0o700, exist_ok=True)
+            shutil.chown(str(home_dir), username, username)
 
             if groups:
                 for group in groups:
-                    subprocess.run(['usermod', '-aG', group, username], check=True)
+                    if not re.match(r'^[a-z_][a-z0-9_-]{0,31}$', group):
+                        return False, f"Invalid group name: {group}"
+                    await asyncio.create_subprocess_exec('usermod', '-aG', group, username)
 
             logger.info(f"User {username} added successfully")
             return True, f"User {username} added successfully"
@@ -71,14 +77,15 @@ class SystemManager:
             return False, f"Error adding user {username}: {e}"
 
     @staticmethod
-    def remove_user(username: str) -> Tuple[bool, str]:
+    async def remove_user(username: str) -> Tuple[bool, str]:
         try:
             pwd.getpwnam(username)
         except KeyError:
             return False, f"User {username} does not exist"
 
         try:
-            subprocess.run(['userdel', '-r', username], check=True)
+            proc = await asyncio.create_subprocess_exec('userdel', '-r', username)
+            await proc.wait()
             logger.info(f"User {username} removed successfully")
             return True, f"User {username} removed successfully"
         except Exception as e:
@@ -109,7 +116,7 @@ class SystemManager:
         return privileges
 
     @staticmethod
-    def get_non_default_users() -> List[Dict[str, Any]]:
+    async def get_non_default_users() -> List[Dict[str, Any]]:
         try:
             non_default_users = []
             for user in pwd.getpwall():
@@ -138,62 +145,4 @@ class SystemManager:
             logger.error(f"Error getting non-default users: {e}")
             return []
 
-class ApplicationManager:
-    @staticmethod
-    def get_installed_applications() -> List[str]:
-        applications = set()
-
-        def add_to_applications(app: str) -> None:
-            if app and len(app) > 1:
-                applications.add(app.strip())
-
-        def scan_desktop_files() -> None:
-            try:
-                for desktop_file in Path('/usr/share/applications').glob('*.desktop'):
-                    with open(desktop_file, 'r', errors='ignore') as f:
-                        content = f.read()
-                        match = re.search(r'^Name=(.+)$', content, re.MULTILINE)
-                        if match:
-                            add_to_applications(match.group(1))
-            except Exception as e:
-                logger.error(f"Error scanning desktop files: {e}")
-
-        def scan_package_manager(command: List[str], start_index: int = 0) -> None:
-            try:
-                result = subprocess.run(command, capture_output=True, text=True)
-                for line in result.stdout.split('\n')[start_index:]:
-                    parts = line.split()
-                    if len(parts) >= 2:
-                        add_to_applications(parts[1] if command[0] == 'dpkg' else parts[0])
-            except Exception as e:
-                logger.error(f"Error using {command[0]}: {e}")
-
-        def scan_bin_directories() -> None:
-            for bin_dir in ['/usr/bin', '/usr/local/bin']:
-                try:
-                    for file in os.listdir(bin_dir):
-                        file_path = os.path.join(bin_dir, file)
-                        if os.path.isfile(file_path) and os.access(file_path, os.X_OK):
-                            add_to_applications(file)
-                except Exception as e:
-                    logger.error(f"Error scanning {bin_dir}: {e}")
-
-        def list_system_services() -> None:
-            try:
-                result = subprocess.run(['systemctl', 'list-units', '--type=service', '--all'], capture_output=True, text=True)
-                for line in result.stdout.split('\n')[1:]:
-                    parts = line.split()
-                    if len(parts) >= 5:
-                        service_name = parts[0].replace('.service', '')
-                        add_to_applications(service_name)
-            except Exception as e:
-                logger.error(f"Error listing system services: {e}")
-
-        with ThreadPoolExecutor() as executor:
-            executor.submit(scan_desktop_files)
-            executor.submit(scan_package_manager, ['dpkg', '-l'], 5)
-            executor.submit(scan_package_manager, ['rpm', '-qa'])
-            executor.submit(scan_bin_directories)
-            executor.submit(list_system_services)
-
-        return sorted(list(applications))
+    # Add other system-related methods here

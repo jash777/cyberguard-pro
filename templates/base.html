@@ -18,7 +18,7 @@
                 <li><a href="{{ url_for('agents') }}" {% if request.path == url_for('agents') %}class="active"{% endif %}>Agents</a></li>
                 <li><a href="{{ url_for('processes') }}" {% if request.path == url_for('processes') %}class="active"{% endif %}>Processes</a></li>
                 <li><a href="{{ url_for('users') }}" {% if request.path == url_for('users') %}class="active"{% endif %}>Users</a></li>
-                <li><a href="{{ url_for('applications') }}" {% if request.path == url_for('applications') %}class="active"{% endif %}>Applications</a></li>
+                <li><a href="{{ url_for('services') }}" {% if request.path == url_for('services') %}class="active"{% endif %}>Services</a></li>
                 <li><a href="{{ url_for('firewall') }}" {% if request.path == url_for('firewall') %}class="active"{% endif %}>Firewall</a></li>
                 <li><p id="current-time"></p></li>
             </ul>

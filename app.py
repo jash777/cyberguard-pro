@@ -19,12 +19,16 @@ app.secret_key = SECRET_KEY
 # Routes
 app.route('/')(index)
 app.route('/agents')(agents)
-app.route('/select_agent/<int:agent_id>', methods=['POST'])(select_agent)
+app.route('/select_agent/<int:agent_id>', methods=['POST','GET'])(select_agent)
 app.route('/users')(users)
-app.route('/applications')(applications)
+# app.route('/applications')(applications)
 app.route('/firewall')(firewall)
 app.route('/processes')(processes)
 app.route('/block_port')(block_port)
+# app.route('/get_services')(get_services)
+app.route('/api/services')(get_services)
+app.route('/services')(services)
+
 
 
 # API Routes
@@ -32,10 +36,12 @@ app.route('/api/agents', methods=['GET', 'POST', 'DELETE'])(manage_agents)
 app.route('/api/check_agent_status/<int:agent_id>')(check_agent_status)
 app.route('/api/processes')(get_processes)
 app.route('/api/users', methods=['GET', 'POST', 'DELETE'])(manage_users)
-app.route('/api/applications')(get_applications)
+# app.route('/api/applications')(get_applications)
 app.route('/api/firewall_rules', methods=['GET', 'POST', 'DELETE'])(manage_firewall_rules)
 app.route('/api/selected_agent')(get_selected_agent)
 app.route('/api/block_port', methods=['POST','GET'])(block_port)
-
+# app.route('/get_services', methods=['POST','GET'])(get_services)
+app.route('/api/services', methods=['POST','GET'])(get_services)
+app.route('/services',methods=['POST','GET'])(services)
 if __name__ == '__main__':
     app.run(debug=DEBUG, port=PORT)
