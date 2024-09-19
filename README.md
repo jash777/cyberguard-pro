@@ -5,6 +5,9 @@ A centralized dashboard for comprehensive server management, including firewall 
 ![Dashboard Screenshot](1.png)
 
 ![Dashboard Screenshot](2.png)
+
+![Dashboard Screenshot](3.png)
+
 ## Table of Contents
 
 
