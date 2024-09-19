@@ -3,6 +3,7 @@
 A centralized dashboard for comprehensive server management, including firewall rules, server activity monitoring, user management, service tracking, and processor performance analysis.
 
 ![Dashboard Screenshot](1.png)
+
 ![Dashboard Screenshot](2.png)
 ## Table of Contents
 
