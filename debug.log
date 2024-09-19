@@ -2,3 +2,23 @@
 2024-09-17 12:08:48,559 - routes - INFO - Applications API request status code: 200
 2024-09-17 12:09:05,899 - routes - DEBUG - Fetching applications from agent
 2024-09-17 12:09:05,955 - routes - INFO - Applications API request status code: 200
+2024-09-17 12:11:57,631 - routes - DEBUG - Fetching applications from agent
+2024-09-17 12:11:57,677 - routes - INFO - Applications API request status code: 200
+2024-09-17 12:12:06,556 - routes - DEBUG - Fetching users from agent
+2024-09-17 12:12:06,585 - routes - INFO - Users API request status code: 200
+2024-09-17 12:12:07,228 - routes - DEBUG - Fetching applications from agent
+2024-09-17 12:12:07,285 - routes - INFO - Applications API request status code: 200
+2024-09-17 12:12:08,380 - routes - DEBUG - Rendering index page
+2024-09-17 12:12:08,499 - routes - DEBUG - Establishing database connection for function: manage_agents
+2024-09-17 12:12:08,502 - routes - DEBUG - Checking for selected agent in function: get_processes
+2024-09-17 12:12:08,505 - routes - INFO - Requesting processes from agent: 192.168.1.7
+2024-09-17 12:12:08,507 - routes - DEBUG - Managing users: GET
+2024-09-17 12:12:08,514 - routes - DEBUG - Checking for selected agent in function: get_applications
+2024-09-17 12:12:08,517 - routes - DEBUG - Fetching applications from agent
+2024-09-17 12:12:08,524 - routes - INFO - Successfully retrieved 129 processes
+2024-09-17 12:12:08,534 - routes - INFO - Manage users API request status code: 200
+2024-09-17 12:12:08,579 - routes - INFO - Successfully retrieved 1801 applications
+2024-09-17 12:12:08,736 - routes - DEBUG - Managing agents: GET
+2024-09-17 12:12:08,741 - routes - INFO - Fetched 3 agents
+2024-09-17 12:12:20,667 - routes - DEBUG - Fetching applications from agent
+2024-09-17 12:12:20,737 - routes - INFO - Applications API request status code: 200
